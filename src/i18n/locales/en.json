@@ -43,7 +43,9 @@
     "mode": "Mode",
     "modeCode": "Code",
     "modeText": "Text",
-    "modeAdaptive": "Adaptive"
+    "modeAdaptive": "Adaptive",
+    "quit": "Quit",
+    "loading": "Loading next problem..."
   },
   "result": {
     "title": "Results",

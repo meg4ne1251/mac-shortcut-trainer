@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import get_db
 from app.models import GameSession, Problem, UserShortcutStat, User
 from app.schemas import GameSessionCreate, GameSessionResponse
@@ -83,7 +83,7 @@ async def _update_shortcut_stats(db: AsyncSession, data: GameSessionCreate) -> N
             existing.total_attempts = total_attempts
             existing.miss_count = miss_count
             existing.mastery_score = mastery
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now(timezone.utc)
         else:
             miss_rate = stats["misses"] / stats["count"] if stats["count"] > 0 else 0
             mastery = max(0.0, min(1.0, (500 / max(new_avg, 1)) * (1 - miss_rate)))

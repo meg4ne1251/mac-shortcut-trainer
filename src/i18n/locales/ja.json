@@ -43,7 +43,9 @@
     "mode": "モード",
     "modeCode": "コード",
     "modeText": "テキスト",
-    "modeAdaptive": "適応型"
+    "modeAdaptive": "適応型",
+    "quit": "やめる",
+    "loading": "次の問題を読み込み中..."
   },
   "result": {
     "title": "結果",

@@ -42,10 +42,12 @@ export default function GameScreen() {
     adaptive: t('game.modeAdaptive'),
   };
 
+  const resetGame = useGameStore((s) => s.resetGame);
+
   if (adaptiveLoading || !problem) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-cyan-400 text-lg animate-pulse">Loading next problem...</div>
+        <div className="text-cyan-400 text-lg animate-pulse">{t('game.loading')}</div>
       </div>
     );
   }
@@ -58,6 +60,13 @@ export default function GameScreen() {
       {/* Top bar */}
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between mb-4">
         <div className="flex items-center gap-3">
+          <button
+            onClick={resetGame}
+            className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-500 hover:border-slate-500 hover:text-slate-300 transition-colors"
+            title={t('game.quit')}
+          >
+            ✕ {t('game.quit')}
+          </button>
           <span className="text-sm text-slate-400">
             {t('game.problem')} {currentNum} {t('game.of')} {totalProblems}
           </span>

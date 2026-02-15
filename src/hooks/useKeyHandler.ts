@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, type RefObject } from 'react';
 import { useGameStore } from '../store/gameStore';
 
 /** Maps Ctrl+key combos and other keys to store actions. */
-export function useKeyHandler() {
+export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
   useEffect(() => {
     let warningTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -125,11 +125,12 @@ export function useKeyHandler() {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('mousedown', handleMouseDown);
+    const container = containerRef.current;
+    container?.addEventListener('mousedown', handleMouseDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('mousedown', handleMouseDown);
+      container?.removeEventListener('mousedown', handleMouseDown);
       if (warningTimer) clearTimeout(warningTimer);
     };
-  }, []);
+  }, [containerRef]);
 }
