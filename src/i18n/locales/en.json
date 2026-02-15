@@ -20,7 +20,14 @@
       "ctrlD": "Ctrl+D — Delete right"
     },
     "tip": "Tip: Use fullscreen mode (F11) for the best experience",
-    "fullscreen": "Enter Fullscreen"
+    "fullscreen": "Enter Fullscreen",
+    "selectMode": "Select Mode",
+    "modeCode": "Code",
+    "modeCodeDesc": "Fix broken source code",
+    "modeText": "Text",
+    "modeTextDesc": "Fix broken documents",
+    "modeAdaptive": "Adaptive",
+    "modeAdaptiveDesc": "Practice your weak shortcuts"
   },
   "game": {
     "problem": "Problem",
@@ -29,9 +36,14 @@
     "misses": "Misses",
     "goal": "Goal",
     "current": "Your Code",
+    "currentText": "Your Text",
     "warning": "Use Ctrl shortcuts instead!",
     "completed": "Correct! Next problem...",
-    "instructions": "Fix the code to match the goal"
+    "instructions": "Fix the code to match the goal",
+    "mode": "Mode",
+    "modeCode": "Code",
+    "modeText": "Text",
+    "modeAdaptive": "Adaptive"
   },
   "result": {
     "title": "Results",
@@ -56,6 +68,16 @@
     "p4_title": "Fix Extra Spaces",
     "p4_desc": "Remove extra whitespace in the code.",
     "p5_title": "Clean Up Function",
-    "p5_desc": "Fix all issues in this messy function."
+    "p5_desc": "Fix all issues in this messy function.",
+    "t1_title": "Fix Typo",
+    "t1_desc": "Find and delete the duplicate letter.",
+    "t2_title": "Add Periods",
+    "t2_desc": "Add missing periods at the end of sentences.",
+    "t3_title": "Remove Draft Line",
+    "t3_desc": "Delete the TODO placeholder line.",
+    "t4_title": "Fix Spacing",
+    "t4_desc": "Remove extra spaces and add a period.",
+    "t5_title": "Clean Up Email",
+    "t5_desc": "Fix spacing, remove draft line, and add periods."
   }
 }

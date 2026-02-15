@@ -85,6 +85,29 @@ export async function createSession(data: ApiSessionCreate): Promise<ApiSessionR
   });
 }
 
+// --- Adaptive Problem ---
+
+export interface ApiProblem {
+  id: string;
+  problem_key: string;
+  type: string;
+  difficulty: string;
+  initial_content: string;
+  goal_content: string;
+  required_keys: string[];
+  locale: string;
+}
+
+export async function getNextAdaptiveProblem(
+  userId: string,
+  type?: string,
+): Promise<ApiProblem> {
+  return request<ApiProblem>('/problems/next', {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, type: type || null }),
+  });
+}
+
 // --- Health ---
 
 export async function healthCheck(): Promise<{ status: string }> {

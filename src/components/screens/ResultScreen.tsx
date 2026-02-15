@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
-import { problems } from '../../data/problems';
+import { problems as allProblems } from '../../data/problems';
 import { formatTime } from '../../hooks/useTimer';
 import type { ShortcutStat} from '../../types';
 import AdPlaceholder from '../ui/AdPlaceholder';
@@ -23,7 +23,7 @@ const SHORTCUT_KEYS = new Set(Object.keys(KEY_LABELS));
 
 export default function ResultScreen() {
   const { t } = useTranslation();
-  const { problemResults, resetGame } = useGameStore();
+  const { problemResults, resetGame, activeProblems } = useGameStore();
 
   // Aggregate stats across all problems
   const aggregated = useMemo(() => {
@@ -81,7 +81,7 @@ export default function ResultScreen() {
           <h2 className="mb-3 text-sm font-semibold text-red-400">⚠️ {t('result.weakKeys')}</h2>
           <div className="space-y-2">
             {weakKeys.map((s) => (
-              <ShortcutRow key={s.shortcutKey} stat={s} t={t} />
+              <ShortcutRow key={s.shortcutKey} stat={s} />
             ))}
           </div>
         </div>
@@ -93,7 +93,7 @@ export default function ResultScreen() {
           <h2 className="mb-3 text-sm font-semibold text-green-400">✓ {t('result.strongKeys')}</h2>
           <div className="space-y-2">
             {strongKeys.map((s) => (
-              <ShortcutRow key={s.shortcutKey} stat={s} t={t} />
+              <ShortcutRow key={s.shortcutKey} stat={s} />
             ))}
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function ResultScreen() {
         <h2 className="mb-3 text-sm font-semibold text-slate-300">{t('result.problemResults')}</h2>
         <div className="space-y-2">
           {problemResults.map((r, i) => {
-            const problem = problems.find((p) => p.id === r.problemId);
+            const problem = activeProblems.find((p) => p.id === r.problemId) ?? allProblems.find((p) => p.id === r.problemId);
             return (
               <div key={r.problemId} className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-2 text-sm">
                 <span className="text-slate-300">
@@ -157,7 +157,7 @@ function SummaryCard({ label, value, color }: { label: string; value: string; co
   );
 }
 
-function ShortcutRow({ stat, t }: { stat: ShortcutStat; t: (k: string) => string }) {
+function ShortcutRow({ stat }: { stat: ShortcutStat }) {
   const pct = Math.round(stat.masteryScore * 100);
   const barColor = pct >= 60 ? 'bg-green-500' : pct >= 30 ? 'bg-yellow-500' : 'bg-red-500';
 

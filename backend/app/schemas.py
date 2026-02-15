@@ -81,3 +81,8 @@ class ProblemResponse(BaseModel):
     locale: str
 
     model_config = {"from_attributes": True}
+
+
+class NextProblemRequest(BaseModel):
+    user_id: uuid.UUID
+    type: str | None = None  # "code" | "text" | None (any)

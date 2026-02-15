@@ -51,6 +51,52 @@ PROBLEMS = [
         "required_keys": ["ctrl_f", "ctrl_b", "ctrl_d", "ctrl_k", "ctrl_a", "ctrl_e", "ctrl_n"],
         "locale": "en",
     },
+    # --- Text problems ---
+    {
+        "problem_key": "t1",
+        "type": "text",
+        "difficulty": "easy",
+        "initial_content": "This is a testt message.\nPlease check it carefully.",
+        "goal_content": "This is a test message.\nPlease check it carefully.",
+        "required_keys": ["ctrl_f", "ctrl_d"],
+        "locale": "en",
+    },
+    {
+        "problem_key": "t2",
+        "type": "text",
+        "difficulty": "easy",
+        "initial_content": "The meeting is scheduled for Monday\nPlease confirm your attendance",
+        "goal_content": "The meeting is scheduled for Monday.\nPlease confirm your attendance.",
+        "required_keys": ["ctrl_e", "ctrl_n"],
+        "locale": "en",
+    },
+    {
+        "problem_key": "t3",
+        "type": "text",
+        "difficulty": "medium",
+        "initial_content": "Dear Team,\nTODO: remove this line\nWe are pleased to announce the new policy.",
+        "goal_content": "Dear Team,\nWe are pleased to announce the new policy.",
+        "required_keys": ["ctrl_n", "ctrl_a", "ctrl_k"],
+        "locale": "en",
+    },
+    {
+        "problem_key": "t4",
+        "type": "text",
+        "difficulty": "medium",
+        "initial_content": "The  quick  brown fox\njumps  over the  lazy dog",
+        "goal_content": "The quick brown fox\njumps over the lazy dog.",
+        "required_keys": ["ctrl_f", "ctrl_d", "ctrl_e", "ctrl_n"],
+        "locale": "en",
+    },
+    {
+        "problem_key": "t5",
+        "type": "text",
+        "difficulty": "hard",
+        "initial_content": "Subject:  Project Update\nDRAFT - DO NOT SEND\nHi  everyone,\nThe deadline has been  extended to Friday\nBest regards",
+        "goal_content": "Subject: Project Update\nHi everyone,\nThe deadline has been extended to Friday.\nBest regards.",
+        "required_keys": ["ctrl_f", "ctrl_b", "ctrl_d", "ctrl_k", "ctrl_a", "ctrl_e", "ctrl_n"],
+        "locale": "en",
+    },
 ]
 
 

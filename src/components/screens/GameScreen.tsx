@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
-import { problems } from '../../data/problems';
 import Editor from '../Editor/Editor';
 import AdPlaceholder from '../ui/AdPlaceholder';
 import { useTimer, formatTime } from '../../hooks/useTimer';
@@ -10,18 +9,26 @@ export default function GameScreen() {
 
   const {
     currentProblemIndex,
+    activeProblems,
+    gameMode,
     lines,
     cursor,
     missCount,
     warningMessage,
     problemCompleted,
     problemStartTime,
+    problemResults,
+    adaptiveLoading,
   } = useGameStore();
 
-  const problem = problems[currentProblemIndex];
-  const goalLines = problem.goalContent.split('\n');
+  const problem = activeProblems[currentProblemIndex];
+  const goalLines = problem?.goalContent.split('\n') ?? [];
   const isRunning = !!problemStartTime && !problemCompleted;
   const elapsed = useTimer(isRunning);
+
+  // For adaptive mode, show how many problems completed out of 5
+  const totalProblems = gameMode === 'adaptive' ? 5 : activeProblems.length;
+  const currentNum = gameMode === 'adaptive' ? problemResults.length + 1 : currentProblemIndex + 1;
 
   const difficultyColors: Record<string, string> = {
     easy: 'text-green-400 bg-green-400/10 border-green-400/30',
@@ -29,18 +36,38 @@ export default function GameScreen() {
     hard: 'text-red-400 bg-red-400/10 border-red-400/30',
   };
 
+  const modeLabels: Record<string, string> = {
+    code: t('game.modeCode'),
+    text: t('game.modeText'),
+    adaptive: t('game.modeAdaptive'),
+  };
+
+  if (adaptiveLoading || !problem) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-cyan-400 text-lg animate-pulse">Loading next problem...</div>
+      </div>
+    );
+  }
+
+  // Use "Your Text" label for text mode
+  const currentLabel = problem.type === 'text' ? t('game.currentText') : t('game.current');
+
   return (
     <div className="flex min-h-screen flex-col px-4 py-4">
       {/* Top bar */}
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-slate-400">
-            {t('game.problem')} {currentProblemIndex + 1} {t('game.of')} {problems.length}
+            {t('game.problem')} {currentNum} {t('game.of')} {totalProblems}
           </span>
           <span
             className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${difficultyColors[problem.difficulty]}`}
           >
             {problem.difficulty}
+          </span>
+          <span className="text-[10px] text-slate-500 border border-slate-700 rounded-full px-2 py-0.5">
+            {modeLabels[gameMode]}
           </span>
         </div>
         <div className="flex items-center gap-6 font-mono text-sm">
@@ -66,13 +93,13 @@ export default function GameScreen() {
         {/* Goal (read-only) */}
         <Editor lines={goalLines} label={t('game.goal')} variant="secondary" />
 
-        {/* Player's code */}
+        {/* Player's code/text */}
         <Editor
           lines={lines}
           cursorRow={cursor.row}
           cursorCol={cursor.col}
           showCursor
-          label={t('game.current')}
+          label={currentLabel}
           variant="primary"
         />
       </div>

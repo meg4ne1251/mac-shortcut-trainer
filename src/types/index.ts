@@ -39,4 +39,5 @@ export interface GameResult {
   shortcutStats: Record<string, ShortcutStat>;
 }
 
+export type GameMode = 'code' | 'text' | 'adaptive';
 export type Screen = 'start' | 'game' | 'result';

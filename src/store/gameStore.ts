@@ -1,12 +1,23 @@
 import { create } from 'zustand';
-import type { KeyLog, GameResult, CursorPosition, Screen, ShortcutStat } from '../types';
-import { problems } from '../data/problems';
-import { saveGameResults, ensureUserId } from '../lib/storage';
+import type { KeyLog, GameResult, CursorPosition, Screen, ShortcutStat, GameMode, Problem } from '../types';
+import { codeProblems, textProblems } from '../data/problems';
+import { saveGameResults, ensureUserId, getSavedUserId } from '../lib/storage';
+import { getNextAdaptiveProblem } from '../lib/api';
 import i18n from '../i18n';
+
+function getProblemsForMode(mode: GameMode): Problem[] {
+  switch (mode) {
+    case 'code': return codeProblems;
+    case 'text': return textProblems;
+    case 'adaptive': return [...codeProblems, ...textProblems]; // fallback pool
+  }
+}
 
 interface GameState {
   currentScreen: Screen;
+  gameMode: GameMode;
   currentProblemIndex: number;
+  activeProblems: Problem[];
   lines: string[];
   cursor: CursorPosition;
   problemStartTime: number | null;
@@ -16,10 +27,12 @@ interface GameState {
   warningMessage: string | null;
   problemCompleted: boolean;
   problemResults: GameResult[];
+  adaptiveLoading: boolean;
 
   setScreen: (screen: Screen) => void;
-  startGame: () => void;
+  startGame: (mode: GameMode) => void;
   loadProblem: (index: number) => void;
+  loadAdaptiveProblem: () => Promise<void>;
   nextProblem: () => void;
 
   moveCursorRight: () => void;
@@ -43,13 +56,15 @@ interface GameState {
   finishGame: () => void;
   resetGame: () => void;
 
-  getCurrentProblem: () => (typeof problems)[number];
+  getCurrentProblem: () => Problem;
   getElapsedMs: () => number;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
   currentScreen: 'start',
+  gameMode: 'code',
   currentProblemIndex: 0,
+  activeProblems: codeProblems,
   lines: [],
   cursor: { row: 0, col: 0 },
   problemStartTime: null,
@@ -59,18 +74,31 @@ export const useGameStore = create<GameState>((set, get) => ({
   warningMessage: null,
   problemCompleted: false,
   problemResults: [],
+  adaptiveLoading: false,
 
   setScreen: (screen) => set({ currentScreen: screen }),
 
-  startGame: () => {
+  startGame: (mode: GameMode) => {
     // Ensure user exists (async, fire-and-forget)
     ensureUserId(i18n.language).catch(() => {});
-    set({ currentScreen: 'game', currentProblemIndex: 0, problemResults: [] });
-    get().loadProblem(0);
+    const problems = getProblemsForMode(mode);
+    set({
+      currentScreen: 'game',
+      gameMode: mode,
+      currentProblemIndex: 0,
+      problemResults: [],
+      activeProblems: problems,
+    });
+    if (mode === 'adaptive') {
+      get().loadAdaptiveProblem();
+    } else {
+      get().loadProblem(0);
+    }
   },
 
   loadProblem: (index) => {
-    const problem = problems[index];
+    const probs = get().activeProblems;
+    const problem = probs[index];
     set({
       currentProblemIndex: index,
       lines: problem.initialContent.split('\n'),
@@ -84,9 +112,59 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   },
 
+  loadAdaptiveProblem: async () => {
+    set({ adaptiveLoading: true });
+    const userId = getSavedUserId();
+    if (!userId) {
+      // Fallback to first problem in the pool
+      get().loadProblem(0);
+      set({ adaptiveLoading: false });
+      return;
+    }
+    try {
+      const apiProblem = await getNextAdaptiveProblem(userId);
+      // Convert API problem to local Problem format
+      const problem: Problem = {
+        id: apiProblem.problem_key,
+        titleKey: `problems.${apiProblem.problem_key}_title`,
+        descriptionKey: `problems.${apiProblem.problem_key}_desc`,
+        type: apiProblem.type as 'code' | 'text',
+        difficulty: apiProblem.difficulty as 'easy' | 'medium' | 'hard',
+        initialContent: apiProblem.initial_content,
+        goalContent: apiProblem.goal_content,
+        requiredKeys: apiProblem.required_keys,
+        cursorStart: { row: 0, col: 0 },
+      };
+      // Replace the current active problems pool with just this one
+      // and load it
+      set((state) => ({
+        activeProblems: [...state.activeProblems, problem],
+        adaptiveLoading: false,
+      }));
+      const idx = get().activeProblems.length - 1;
+      get().loadProblem(idx);
+    } catch {
+      // API unavailable — fallback to random local problem
+      const pool = get().activeProblems;
+      const idx = Math.floor(Math.random() * pool.length);
+      get().loadProblem(idx);
+      set({ adaptiveLoading: false });
+    }
+  },
+
   nextProblem: () => {
-    const nextIndex = get().currentProblemIndex + 1;
-    if (nextIndex < problems.length) {
+    const state = get();
+    if (state.gameMode === 'adaptive') {
+      // In adaptive mode, play 5 problems then finish
+      if (state.problemResults.length >= 5) {
+        get().finishGame();
+      } else {
+        get().loadAdaptiveProblem();
+      }
+      return;
+    }
+    const nextIndex = state.currentProblemIndex + 1;
+    if (nextIndex < state.activeProblems.length) {
       get().loadProblem(nextIndex);
     } else {
       get().finishGame();
@@ -250,7 +328,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   checkCompletion: () => {
     const state = get();
-    const problem = problems[state.currentProblemIndex];
+    const problem = state.activeProblems[state.currentProblemIndex];
     return state.lines.join('\n') === problem.goalContent;
   },
 
@@ -258,7 +336,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const state = get();
     if (state.problemCompleted) return;
 
-    const problem = problems[state.currentProblemIndex];
+    const problem = state.activeProblems[state.currentProblemIndex];
     const totalTimeMs = state.problemStartTime ? Date.now() - state.problemStartTime : 0;
 
     // Aggregate per-shortcut stats
@@ -307,7 +385,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   resetGame: () =>
     set({
       currentScreen: 'start',
+      gameMode: 'code',
       currentProblemIndex: 0,
+      activeProblems: codeProblems,
       lines: [],
       cursor: { row: 0, col: 0 },
       problemStartTime: null,
@@ -317,9 +397,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       warningMessage: null,
       problemCompleted: false,
       problemResults: [],
+      adaptiveLoading: false,
     }),
 
-  getCurrentProblem: () => problems[get().currentProblemIndex],
+  getCurrentProblem: () => get().activeProblems[get().currentProblemIndex],
   getElapsedMs: () => {
     const s = get();
     return s.problemStartTime ? Date.now() - s.problemStartTime : 0;
