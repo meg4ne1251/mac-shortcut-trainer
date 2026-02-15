@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import type { KeyLog, GameResult, CursorPosition, Screen, ShortcutStat } from '../types';
 import { problems } from '../data/problems';
-import { saveGameResults } from '../lib/storage';
+import { saveGameResults, ensureUserId } from '../lib/storage';
+import i18n from '../i18n';
 
 interface GameState {
   currentScreen: Screen;
@@ -62,6 +63,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   setScreen: (screen) => set({ currentScreen: screen }),
 
   startGame: () => {
+    // Ensure user exists (async, fire-and-forget)
+    ensureUserId(i18n.language).catch(() => {});
     set({ currentScreen: 'game', currentProblemIndex: 0, problemResults: [] });
     get().loadProblem(0);
   },
