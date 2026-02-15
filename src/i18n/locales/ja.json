@@ -1,0 +1,61 @@
+{
+  "app": {
+    "title": "Refactoring Racer",
+    "subtitle": "コードチャレンジでMacキーボードショートカットをマスターしよう"
+  },
+  "start": {
+    "play": "ゲームスタート",
+    "howToPlay": "遊び方",
+    "description": "キーボードショートカットだけで壊れたコードを修正しよう。マウスや方向キーは使えません！",
+    "shortcuts": "ショートカット一覧",
+    "shortcutList": {
+      "ctrlF": "Ctrl+F — 右へ移動",
+      "ctrlB": "Ctrl+B — 左へ移動",
+      "ctrlN": "Ctrl+N — 下へ移動",
+      "ctrlP": "Ctrl+P — 上へ移動",
+      "ctrlA": "Ctrl+A — 行頭へ移動",
+      "ctrlE": "Ctrl+E — 行末へ移動",
+      "ctrlK": "Ctrl+K — カーソル以降を削除",
+      "ctrlH": "Ctrl+H — 左の文字を削除",
+      "ctrlD": "Ctrl+D — 右の文字を削除"
+    },
+    "tip": "ヒント：フルスクリーンモード（F11）での操作を推奨します",
+    "fullscreen": "フルスクリーン"
+  },
+  "game": {
+    "problem": "問題",
+    "of": "/",
+    "time": "タイム",
+    "misses": "ミス",
+    "goal": "ゴール",
+    "current": "あなたのコード",
+    "warning": "Ctrlショートカットを使ってください！",
+    "completed": "正解！次の問題へ...",
+    "instructions": "ゴールと同じコードに修正してください"
+  },
+  "result": {
+    "title": "結果",
+    "totalTime": "合計タイム",
+    "totalMisses": "合計ミス数",
+    "accuracy": "正確率",
+    "weakKeys": "練習が必要なキー",
+    "strongKeys": "得意なキー",
+    "playAgain": "もう一度プレイ",
+    "noWeakKeys": "素晴らしい！苦手なキーはありません。",
+    "problemResults": "問題別結果",
+    "avgLatency": "平均速度",
+    "attempts": "使用回数"
+  },
+  "problems": {
+    "p1_title": "セミコロンを追加",
+    "p1_desc": "各文の末尾にセミコロンを追加してください。",
+    "p2_title": "余分な文字を削除",
+    "p2_desc": "関数内の重複した文字を削除してください。",
+    "p3_title": "デバッグ行を削除",
+    "p3_desc": "デバッグ用のconsole.log行を削除してください。",
+    "p4_title": "余分なスペースを修正",
+    "p4_desc": "コード内の余分な空白を削除してください。",
+    "p5_title": "関数をクリーンアップ",
+    "p5_desc": "この乱雑な関数のすべての問題を修正してください。"
+  }
+}

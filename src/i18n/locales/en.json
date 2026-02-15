@@ -1,0 +1,61 @@
+{
+  "app": {
+    "title": "Refactoring Racer",
+    "subtitle": "Master Mac keyboard shortcuts through code challenges"
+  },
+  "start": {
+    "play": "Start Game",
+    "howToPlay": "How to Play",
+    "description": "Fix broken code using only keyboard shortcuts. No mouse or arrow keys allowed!",
+    "shortcuts": "Shortcuts",
+    "shortcutList": {
+      "ctrlF": "Ctrl+F — Move right",
+      "ctrlB": "Ctrl+B — Move left",
+      "ctrlN": "Ctrl+N — Move down",
+      "ctrlP": "Ctrl+P — Move up",
+      "ctrlA": "Ctrl+A — Line start",
+      "ctrlE": "Ctrl+E — Line end",
+      "ctrlK": "Ctrl+K — Kill to end",
+      "ctrlH": "Ctrl+H — Delete left",
+      "ctrlD": "Ctrl+D — Delete right"
+    },
+    "tip": "Tip: Use fullscreen mode (F11) for the best experience",
+    "fullscreen": "Enter Fullscreen"
+  },
+  "game": {
+    "problem": "Problem",
+    "of": "of",
+    "time": "Time",
+    "misses": "Misses",
+    "goal": "Goal",
+    "current": "Your Code",
+    "warning": "Use Ctrl shortcuts instead!",
+    "completed": "Correct! Next problem...",
+    "instructions": "Fix the code to match the goal"
+  },
+  "result": {
+    "title": "Results",
+    "totalTime": "Total Time",
+    "totalMisses": "Total Misses",
+    "accuracy": "Accuracy",
+    "weakKeys": "Keys to Practice",
+    "strongKeys": "Strong Keys",
+    "playAgain": "Play Again",
+    "noWeakKeys": "Great job! No weak areas found.",
+    "problemResults": "Problem Breakdown",
+    "avgLatency": "Avg Speed",
+    "attempts": "Uses"
+  },
+  "problems": {
+    "p1_title": "Add Missing Semicolons",
+    "p1_desc": "Add semicolons to the end of each statement.",
+    "p2_title": "Remove Extra Characters",
+    "p2_desc": "Delete the duplicate characters in the function.",
+    "p3_title": "Delete Debug Line",
+    "p3_desc": "Remove the debug console.log line.",
+    "p4_title": "Fix Extra Spaces",
+    "p4_desc": "Remove extra whitespace in the code.",
+    "p5_title": "Clean Up Function",
+    "p5_desc": "Fix all issues in this messy function."
+  }
+}
