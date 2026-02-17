@@ -10,26 +10,59 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       const state = useGameStore.getState();
       if (state.currentScreen !== 'game' || state.problemCompleted) return;
 
-      const { ctrlKey, metaKey, key } = e;
+      const { ctrlKey, metaKey, shiftKey, key } = e;
 
       // --- Ctrl shortcuts ---
       if (ctrlKey || metaKey) {
         const k = key.toLowerCase();
-        const handlers: Record<string, () => void> = {
+
+        // Undo: Ctrl+Z (no Shift)
+        if (k === 'z' && !shiftKey) {
+          e.preventDefault();
+          state.undo();
+          state.logKeyPress('ctrl_z', false);
+          // Check if undo resulted in completion
+          checkAfterEdit('undo');
+          return;
+        }
+
+        // Redo: Ctrl+Shift+Z
+        if (k === 'z' && shiftKey) {
+          e.preventDefault();
+          state.redo();
+          state.logKeyPress('ctrl_shift_z', false);
+          checkAfterEdit('redo');
+          return;
+        }
+
+        // Navigation handlers (no snapshot needed)
+        const navHandlers: Record<string, () => void> = {
           f: state.moveCursorRight,
           b: state.moveCursorLeft,
           n: state.moveCursorDown,
           p: state.moveCursorUp,
           a: state.moveCursorToLineStart,
           e: state.moveCursorToLineEnd,
+        };
+
+        if (navHandlers[k]) {
+          e.preventDefault();
+          navHandlers[k]();
+          state.logKeyPress(`ctrl_${k}`, false);
+          return;
+        }
+
+        // Edit handlers (push snapshot before edit)
+        const editHandlers: Record<string, () => void> = {
           k: state.killLine,
           h: state.deleteBackward,
           d: state.deleteForward,
         };
 
-        if (handlers[k]) {
+        if (editHandlers[k]) {
           e.preventDefault();
-          handlers[k]();
+          state.pushSnapshot();
+          editHandlers[k]();
           state.logKeyPress(`ctrl_${k}`, false);
           checkAfterEdit(k);
           return;
@@ -51,6 +84,7 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       // --- Backspace / Delete (no penalty, but no shortcut credit) ---
       if (key === 'Backspace') {
         e.preventDefault();
+        state.pushSnapshot();
         state.deleteBackward();
         state.logKeyPress('backspace', false);
         checkAfterEdit('h');
@@ -58,6 +92,7 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       }
       if (key === 'Delete') {
         e.preventDefault();
+        state.pushSnapshot();
         state.deleteForward();
         state.logKeyPress('delete', false);
         checkAfterEdit('d');
@@ -67,6 +102,7 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       // --- Enter ---
       if (key === 'Enter') {
         e.preventDefault();
+        state.pushSnapshot();
         state.splitLine();
         state.logKeyPress('enter', false);
         checkAfterEdit('enter');
@@ -76,6 +112,7 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       // --- Tab → insert 2 spaces ---
       if (key === 'Tab') {
         e.preventDefault();
+        state.pushSnapshot();
         state.insertChar('  ');
         state.logKeyPress('tab', false);
         checkAfterEdit('tab');
@@ -85,6 +122,7 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       // --- Printable character ---
       if (key.length === 1 && !ctrlKey && !metaKey && !e.altKey) {
         e.preventDefault();
+        state.pushSnapshot();
         state.insertChar(key);
         state.logKeyPress('char', false);
         checkAfterEdit('char');
@@ -103,8 +141,8 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
 
     /** Check for problem completion after an edit operation */
     function checkAfterEdit(k: string) {
-      // Only check after text-modifying operations
-      const editKeys = new Set(['k', 'h', 'd', 'char', 'enter', 'tab']);
+      // Check after any text-modifying or undo/redo operation
+      const editKeys = new Set(['k', 'h', 'd', 'char', 'enter', 'tab', 'undo', 'redo']);
       if (!editKeys.has(k)) return;
 
       const s = useGameStore.getState();

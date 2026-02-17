@@ -1,9 +1,14 @@
 import { create } from 'zustand';
-import type { KeyLog, GameResult, CursorPosition, Screen, ShortcutStat, GameMode, Problem } from '../types';
+import type {
+  KeyLog, GameResult, CursorPosition, Screen, ShortcutStat,
+  GameMode, Problem, Difficulty, Category, Language, EditorSnapshot,
+} from '../types';
 import { codeProblems, textProblems } from '../data/problems';
 import { saveGameResults, ensureUserId, getSavedUserId } from '../lib/storage';
 import { getNextAdaptiveProblem } from '../lib/api';
 import i18n from '../i18n';
+
+const MAX_HISTORY = 50;
 
 function getProblemsForMode(mode: GameMode): Problem[] {
   switch (mode) {
@@ -13,9 +18,32 @@ function getProblemsForMode(mode: GameMode): Problem[] {
   }
 }
 
+function filterProblems(
+  pool: Problem[],
+  difficulty: Difficulty | null,
+  category: Category | null,
+  language: Language | null,
+): Problem[] {
+  let filtered = pool;
+  if (difficulty) {
+    filtered = filtered.filter((p) => p.difficulty === difficulty);
+  }
+  if (category) {
+    filtered = filtered.filter((p) => p.category === category);
+  }
+  if (language) {
+    filtered = filtered.filter((p) => p.language === language);
+  }
+  // If all filtered out, return original pool
+  return filtered.length > 0 ? filtered : pool;
+}
+
 interface GameState {
   currentScreen: Screen;
   gameMode: GameMode;
+  selectedDifficulty: Difficulty | null;
+  selectedCategory: Category | null;
+  selectedLanguage: Language | null;
   currentProblemIndex: number;
   activeProblems: Problem[];
   lines: string[];
@@ -29,7 +57,14 @@ interface GameState {
   problemResults: GameResult[];
   adaptiveLoading: boolean;
 
+  // Undo/Redo history
+  undoStack: EditorSnapshot[];
+  redoStack: EditorSnapshot[];
+
   setScreen: (screen: Screen) => void;
+  setDifficulty: (d: Difficulty | null) => void;
+  setCategory: (c: Category | null) => void;
+  setLanguage: (l: Language | null) => void;
   startGame: (mode: GameMode) => void;
   loadProblem: (index: number) => void;
   loadAdaptiveProblem: () => Promise<void>;
@@ -47,6 +82,11 @@ interface GameState {
   insertChar: (chars: string) => void;
   splitLine: () => void;
 
+  // Undo/Redo
+  pushSnapshot: () => void;
+  undo: () => void;
+  redo: () => void;
+
   logKeyPress: (key: string, isMiss: boolean) => void;
   showWarning: (msg: string) => void;
   clearWarning: () => void;
@@ -63,6 +103,9 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
   currentScreen: 'start',
   gameMode: 'code',
+  selectedDifficulty: null,
+  selectedCategory: null,
+  selectedLanguage: null,
   currentProblemIndex: 0,
   activeProblems: codeProblems,
   lines: [],
@@ -75,13 +118,25 @@ export const useGameStore = create<GameState>((set, get) => ({
   problemCompleted: false,
   problemResults: [],
   adaptiveLoading: false,
+  undoStack: [],
+  redoStack: [],
 
   setScreen: (screen) => set({ currentScreen: screen }),
+  setDifficulty: (d) => set({ selectedDifficulty: d }),
+  setCategory: (c) => set({ selectedCategory: c }),
+  setLanguage: (l) => set({ selectedLanguage: l }),
 
   startGame: (mode: GameMode) => {
     // Ensure user exists (async, fire-and-forget)
-    ensureUserId(i18n.language).catch(() => {});
-    const problems = getProblemsForMode(mode);
+    ensureUserId(i18n.language).catch(() => { });
+    const state = get();
+    const pool = getProblemsForMode(mode);
+    const problems = filterProblems(
+      pool,
+      state.selectedDifficulty,
+      state.selectedCategory,
+      state.selectedLanguage,
+    );
     set({
       currentScreen: 'game',
       gameMode: mode,
@@ -109,6 +164,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       missCount: 0,
       warningMessage: null,
       problemCompleted: false,
+      undoStack: [],
+      redoStack: [],
     });
   },
 
@@ -129,7 +186,9 @@ export const useGameStore = create<GameState>((set, get) => ({
         titleKey: `problems.${apiProblem.problem_key}_title`,
         descriptionKey: `problems.${apiProblem.problem_key}_desc`,
         type: apiProblem.type as 'code' | 'text',
-        difficulty: apiProblem.difficulty as 'easy' | 'medium' | 'hard',
+        difficulty: apiProblem.difficulty as Difficulty,
+        category: (apiProblem as Record<string, unknown>).category as Category ?? 'shortcut',
+        language: (apiProblem as Record<string, unknown>).language as Language ?? 'en',
         initialContent: apiProblem.initial_content,
         goalContent: apiProblem.goal_content,
         requiredKeys: apiProblem.required_keys,
@@ -170,6 +229,55 @@ export const useGameStore = create<GameState>((set, get) => ({
       get().finishGame();
     }
   },
+
+  // --- Undo/Redo ---
+
+  pushSnapshot: () =>
+    set((state) => {
+      const snapshot: EditorSnapshot = {
+        lines: [...state.lines],
+        cursor: { ...state.cursor },
+      };
+      const newStack = [...state.undoStack, snapshot];
+      if (newStack.length > MAX_HISTORY) {
+        newStack.shift();
+      }
+      return { undoStack: newStack, redoStack: [] };
+    }),
+
+  undo: () =>
+    set((state) => {
+      if (state.undoStack.length === 0) return {};
+      const newUndo = [...state.undoStack];
+      const snapshot = newUndo.pop()!;
+      const currentSnapshot: EditorSnapshot = {
+        lines: [...state.lines],
+        cursor: { ...state.cursor },
+      };
+      return {
+        lines: snapshot.lines,
+        cursor: snapshot.cursor,
+        undoStack: newUndo,
+        redoStack: [...state.redoStack, currentSnapshot],
+      };
+    }),
+
+  redo: () =>
+    set((state) => {
+      if (state.redoStack.length === 0) return {};
+      const newRedo = [...state.redoStack];
+      const snapshot = newRedo.pop()!;
+      const currentSnapshot: EditorSnapshot = {
+        lines: [...state.lines],
+        cursor: { ...state.cursor },
+      };
+      return {
+        lines: snapshot.lines,
+        cursor: snapshot.cursor,
+        redoStack: newRedo,
+        undoStack: [...state.undoStack, currentSnapshot],
+      };
+    }),
 
   // --- Editor operations ---
 
@@ -386,6 +494,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       currentScreen: 'start',
       gameMode: 'code',
+      selectedDifficulty: null,
+      selectedCategory: null,
+      selectedLanguage: null,
       currentProblemIndex: 0,
       activeProblems: codeProblems,
       lines: [],
@@ -398,6 +509,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       problemCompleted: false,
       problemResults: [],
       adaptiveLoading: false,
+      undoStack: [],
+      redoStack: [],
     }),
 
   getCurrentProblem: () => get().activeProblems[get().currentProblemIndex],

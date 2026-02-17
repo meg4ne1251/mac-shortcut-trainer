@@ -1,9 +1,15 @@
+export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Category = 'typing' | 'shortcut';
+export type Language = 'en' | 'ja' | 'mixed';
+
 export interface Problem {
   id: string;
   titleKey: string;
   descriptionKey: string;
   type: 'code' | 'text';
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: Difficulty;
+  category: Category;
+  language: Language;
   initialContent: string;
   goalContent: string;
   requiredKeys: string[];
@@ -37,6 +43,12 @@ export interface GameResult {
   completed: boolean;
   keyLogs: KeyLog[];
   shortcutStats: Record<string, ShortcutStat>;
+}
+
+/** Snapshot of editor state for undo/redo */
+export interface EditorSnapshot {
+  lines: string[];
+  cursor: CursorPosition;
 }
 
 export type GameMode = 'code' | 'text' | 'adaptive';

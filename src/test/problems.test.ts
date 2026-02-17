@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { codeProblems, textProblems, problemsByType, problems } from '../data/problems';
 
 describe('problems data', () => {
-  it('should have 5 code problems', () => {
-    expect(codeProblems.length).toBe(5);
+  it('should have code problems', () => {
+    expect(codeProblems.length).toBeGreaterThanOrEqual(15);
   });
 
-  it('should have 5 text problems', () => {
-    expect(textProblems.length).toBe(5);
+  it('should have text problems', () => {
+    expect(textProblems.length).toBeGreaterThanOrEqual(15);
   });
 
-  it('should have 10 total problems', () => {
-    expect(problems.length).toBe(10);
+  it('should have matching total problems', () => {
+    expect(problems.length).toBe(codeProblems.length + textProblems.length);
   });
 
   it('should have correct types', () => {
@@ -31,6 +31,8 @@ describe('problems data', () => {
       expect(p.titleKey).toBeTruthy();
       expect(p.descriptionKey).toBeTruthy();
       expect(['easy', 'medium', 'hard']).toContain(p.difficulty);
+      expect(['typing', 'shortcut']).toContain(p.category);
+      expect(['en', 'ja', 'mixed']).toContain(p.language);
       expect(p.initialContent).toBeTruthy();
       expect(p.goalContent).toBeTruthy();
       expect(p.requiredKeys.length).toBeGreaterThan(0);
