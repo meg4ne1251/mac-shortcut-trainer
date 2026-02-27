@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
+from app.middleware import RateLimitMiddleware
 from app.routers import users, problems, sessions, health
 
 settings = get_settings()
@@ -18,6 +19,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
 )
+
+# Rate limit POST requests: 60 per minute per IP
+app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
 
 app.include_router(health.router, prefix="/api")
 app.include_router(users.router, prefix="/api")

@@ -91,6 +91,13 @@ async def test_get_problem_not_found(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_get_problem_invalid_key_rejected(client: AsyncClient):
+    """Problem keys with special characters should be rejected by path validation."""
+    resp = await client.get("/api/problems/'; DROP TABLE--")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
 async def test_adaptive_next_problem_new_user(client: AsyncClient):
     await _seed_problems()
     # Create user

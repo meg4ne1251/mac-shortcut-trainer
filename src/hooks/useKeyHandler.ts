@@ -165,11 +165,25 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       showWarn(state);
     };
 
+    /** Handle IME composition end — insert the confirmed string */
+    const handleCompositionEnd = (e: CompositionEvent) => {
+      const state = useGameStore.getState();
+      if (state.currentScreen !== 'game' || state.problemCompleted) return;
+      if (e.data) {
+        state.pushSnapshot();
+        state.insertChar(e.data);
+        state.logKeyPress('ime_commit', false);
+        checkAfterEdit('char');
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('compositionend', handleCompositionEnd);
     const container = containerRef.current;
     container?.addEventListener('mousedown', handleMouseDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('compositionend', handleCompositionEnd);
       container?.removeEventListener('mousedown', handleMouseDown);
       if (warningTimer) clearTimeout(warningTimer);
     };

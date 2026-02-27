@@ -67,7 +67,7 @@ async def _update_shortcut_stats(db: AsyncSession, data: GameSessionCreate) -> N
         )
         existing = result.scalar_one_or_none()
 
-        new_avg = stats["total_latency"] / stats["count"] if stats["count"] > 0 else 0
+        session_avg = stats["total_latency"] / stats["count"] if stats["count"] > 0 else 0
 
         if existing:
             # Running average
@@ -86,11 +86,11 @@ async def _update_shortcut_stats(db: AsyncSession, data: GameSessionCreate) -> N
             existing.updated_at = datetime.now(timezone.utc)
         else:
             miss_rate = stats["misses"] / stats["count"] if stats["count"] > 0 else 0
-            mastery = max(0.0, min(1.0, (500 / max(new_avg, 1)) * (1 - miss_rate)))
+            mastery = max(0.0, min(1.0, (500 / max(session_avg, 1)) * (1 - miss_rate)))
             stat = UserShortcutStat(
                 user_id=data.user_id,
                 shortcut_key=shortcut_key,
-                avg_latency_ms=new_avg,
+                avg_latency_ms=session_avg,
                 total_attempts=stats["count"],
                 miss_count=stats["misses"],
                 mastery_score=mastery,

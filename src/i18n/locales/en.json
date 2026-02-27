@@ -38,7 +38,15 @@
     "categoryTypingDesc": "Heavy text entry practice",
     "categoryShortcut": "Shortcuts",
     "categoryShortcutDesc": "Navigation & editing shortcuts",
-    "categoryHint": "Leave unselected to include all categories"
+    "categoryHint": "Leave unselected to include all categories",
+    "selectLanguage": "Select Language",
+    "languageEn": "English",
+    "languageEnDesc": "English-only problems",
+    "languageJa": "Japanese",
+    "languageJaDesc": "Japanese-only problems",
+    "languageMixed": "Mixed",
+    "languageMixedDesc": "IME switching practice",
+    "languageHint": "Leave unselected to include all languages"
   },
   "game": {
     "problem": "Problem",

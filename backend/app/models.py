@@ -67,7 +67,7 @@ class GameSession(Base):
     total_time_ms: Mapped[int] = mapped_column(Integer)
     total_misses: Mapped[int] = mapped_column(Integer, default=0)
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
-    key_logs: Mapped[dict] = mapped_column(JSONB, default=list)
+    key_logs: Mapped[list] = mapped_column(JSONB, default=list)
     played_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
     user: Mapped["User"] = relationship(back_populates="game_sessions")

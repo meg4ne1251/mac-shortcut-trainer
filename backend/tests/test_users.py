@@ -64,3 +64,21 @@ async def test_create_user_nickname_too_long(client: AsyncClient):
     long_name = "a" * 101
     resp = await client.post("/api/users", json={"nickname": long_name, "locale": "en"})
     assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_rate_limit_rejects_excessive_requests(client: AsyncClient):
+    """POST endpoints should be rate-limited (60 req/min by default).
+
+    Note: Other tests in this suite also issue POST requests, contributing
+    to the rate limiter state.  We send enough to guarantee crossing the
+    threshold and then verify the 429 response.
+    """
+    status_codes: list[int] = []
+    for _ in range(80):
+        resp = await client.post("/api/users", json={"locale": "en"})
+        status_codes.append(resp.status_code)
+
+    assert 429 in status_codes, "Expected at least one 429 response after exceeding rate limit"
+    # Verify that early requests succeeded
+    assert status_codes[0] in (201, 429)

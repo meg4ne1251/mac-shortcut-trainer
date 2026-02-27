@@ -38,7 +38,15 @@
     "categoryTypingDesc": "文字入力の練習が中心",
     "categoryShortcut": "ショートカット",
     "categoryShortcutDesc": "カーソル移動・編集操作が中心",
-    "categoryHint": "未選択の場合、全カテゴリが含まれます"
+    "categoryHint": "未選択の場合、全カテゴリが含まれます",
+    "selectLanguage": "言語選択",
+    "languageEn": "英語",
+    "languageEnDesc": "英語のみの問題",
+    "languageJa": "日本語",
+    "languageJaDesc": "日本語のみの問題",
+    "languageMixed": "混合",
+    "languageMixedDesc": "IME切り替え練習",
+    "languageHint": "未選択の場合、全言語が含まれます"
   },
   "game": {
     "problem": "問題",

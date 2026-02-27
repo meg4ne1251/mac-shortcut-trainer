@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGameStore } from '../../store/gameStore';
-import type { GameMode, Difficulty, Category } from '../../types';
+import type { GameMode, Difficulty, Category, Language } from '../../types';
 import AdPlaceholder from '../ui/AdPlaceholder';
 
 const SHORTCUTS = [
@@ -26,13 +26,21 @@ const CATEGORIES: { key: Category; icon: string }[] = [
   { key: 'shortcut', icon: '⚡' },
 ];
 
+const LANGUAGES: { key: Language; icon: string }[] = [
+  { key: 'en', icon: '🇺🇸' },
+  { key: 'ja', icon: '🇯🇵' },
+  { key: 'mixed', icon: '🌐' },
+];
+
 export default function StartScreen() {
   const { t, i18n } = useTranslation();
   const startGame = useGameStore((s) => s.startGame);
   const setDifficulty = useGameStore((s) => s.setDifficulty);
   const setCategory = useGameStore((s) => s.setCategory);
+  const setLanguage = useGameStore((s) => s.setLanguage);
   const selectedDifficulty = useGameStore((s) => s.selectedDifficulty);
   const selectedCategory = useGameStore((s) => s.selectedCategory);
+  const selectedLanguage = useGameStore((s) => s.selectedLanguage);
   const [selectedMode, setSelectedMode] = useState<GameMode>('code');
 
   const toggleLang = () => {
@@ -51,6 +59,11 @@ export default function StartScreen() {
   const handleCategoryClick = (c: Category) => {
     const value = selectedCategory === c ? null : c;
     setCategory(value);
+  };
+
+  const handleLanguageClick = (l: Language) => {
+    const value = selectedLanguage === l ? null : l;
+    setLanguage(value);
   };
 
   return (
@@ -175,6 +188,36 @@ export default function StartScreen() {
         </div>
         <p className="mt-1 text-center text-[10px] text-slate-600">
           {t('start.categoryHint')}
+        </p>
+      </div>
+
+      {/* Language selection */}
+      <div className="mb-6 w-full max-w-lg">
+        <h3 className="mb-3 text-center text-sm font-semibold text-slate-300">
+          {t('start.selectLanguage')}
+        </h3>
+        <div className="grid grid-cols-3 gap-3">
+          {LANGUAGES.map(({ key, icon }) => (
+            <button
+              key={key}
+              onClick={() => handleLanguageClick(key)}
+              className={`rounded-lg border p-2.5 text-center transition-all ${selectedLanguage === key
+                  ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-lg shadow-cyan-500/10'
+                  : 'border-slate-700 bg-slate-900/50 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                }`}
+            >
+              <div className="text-lg mb-0.5">{icon}</div>
+              <div className="text-xs font-semibold">
+                {t(`start.language${key.charAt(0).toUpperCase() + key.slice(1)}`)}
+              </div>
+              <div className="text-[10px] mt-0.5 opacity-70">
+                {t(`start.language${key.charAt(0).toUpperCase() + key.slice(1)}Desc`)}
+              </div>
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-center text-[10px] text-slate-600">
+          {t('start.languageHint')}
         </p>
       </div>
 

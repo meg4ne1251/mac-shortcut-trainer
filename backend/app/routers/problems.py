@@ -1,5 +1,6 @@
 import random
 
+import fastapi
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -106,7 +107,10 @@ async def get_next_adaptive_problem(
 
 
 @router.get("/problems/{problem_key}", response_model=ProblemResponse)
-async def get_problem(problem_key: str, db: AsyncSession = Depends(get_db)):
+async def get_problem(
+    problem_key: str = fastapi.Path(pattern=r"^[a-zA-Z0-9_]{1,20}$"),
+    db: AsyncSession = Depends(get_db),
+):
     result = await db.execute(select(Problem).where(Problem.problem_key == problem_key))
     problem = result.scalar_one_or_none()
     if not problem:
