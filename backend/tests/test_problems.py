@@ -9,17 +9,17 @@ async def _seed_problems():
     """Seed test problems."""
     async with TestSession() as session:
         session.add(Problem(
-            problem_key="p1", type="code", difficulty="easy",
+            problem_key="p1", type="code", difficulty="easy", category="shortcut",
             initial_content="const x = 1", goal_content="const x = 1;",
             required_keys=["ctrl_e"], locale="en",
         ))
         session.add(Problem(
-            problem_key="t1", type="text", difficulty="easy",
+            problem_key="t1", type="text", difficulty="easy", category="shortcut",
             initial_content="helllo world", goal_content="hello world",
             required_keys=["ctrl_f", "ctrl_d"], locale="en",
         ))
         session.add(Problem(
-            problem_key="p2", type="code", difficulty="hard",
+            problem_key="p2", type="code", difficulty="hard", category="typing",
             initial_content="fn()", goal_content="fn();",
             required_keys=["ctrl_e", "ctrl_n", "ctrl_k"], locale="en",
         ))
@@ -52,6 +52,28 @@ async def test_list_problems_by_difficulty(client: AsyncClient):
     data = resp.json()
     assert len(data) == 2
     assert all(p["difficulty"] == "easy" for p in data)
+
+
+@pytest.mark.asyncio
+async def test_list_problems_by_category(client: AsyncClient):
+    await _seed_problems()
+    resp = await client.get("/api/problems?category=shortcut")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data) == 2
+    assert all(p["category"] == "shortcut" for p in data)
+
+
+@pytest.mark.asyncio
+async def test_list_problems_invalid_type(client: AsyncClient):
+    resp = await client.get("/api/problems?type=invalid")
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_list_problems_invalid_difficulty(client: AsyncClient):
+    resp = await client.get("/api/problems?difficulty=impossible")
+    assert resp.status_code == 422
 
 
 @pytest.mark.asyncio

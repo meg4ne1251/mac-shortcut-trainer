@@ -51,3 +51,16 @@ async def test_get_user_stats_empty(client: AsyncClient):
     assert data["user_id"] == user_id
     assert data["stats"] == []
     assert data["weaknesses"] == []
+
+
+@pytest.mark.asyncio
+async def test_create_user_invalid_locale(client: AsyncClient):
+    resp = await client.post("/api/users", json={"locale": "xx"})
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_user_nickname_too_long(client: AsyncClient):
+    long_name = "a" * 101
+    resp = await client.post("/api/users", json={"nickname": long_name, "locale": "en"})
+    assert resp.status_code == 422

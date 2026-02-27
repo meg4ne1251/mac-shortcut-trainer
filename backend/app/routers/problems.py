@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+import random
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
@@ -10,8 +12,9 @@ router = APIRouter(tags=["problems"])
 
 @router.get("/problems", response_model=list[ProblemResponse])
 async def list_problems(
-    type: str | None = Query(None),
-    difficulty: str | None = Query(None),
+    type: str | None = Query(None, pattern="^(code|text)$"),
+    difficulty: str | None = Query(None, pattern="^(easy|medium|hard)$"),
+    category: str | None = Query(None, pattern="^(typing|shortcut)$"),
     db: AsyncSession = Depends(get_db),
 ):
     stmt = select(Problem)
@@ -19,6 +22,8 @@ async def list_problems(
         stmt = stmt.where(Problem.type == type)
     if difficulty:
         stmt = stmt.where(Problem.difficulty == difficulty)
+    if category:
+        stmt = stmt.where(Problem.category == category)
     result = await db.execute(stmt)
     return result.scalars().all()
 
@@ -58,11 +63,13 @@ async def get_next_adaptive_problem(
         result = await db.execute(stmt.order_by(Problem.problem_key))
         problems = result.scalars().all()
         if problems:
-            import random
             return random.choice(problems)
         # Fallback: any problem
         result = await db.execute(select(Problem).limit(1))
-        return result.scalar_one()
+        fallback = result.scalar_one_or_none()
+        if not fallback:
+            raise HTTPException(status_code=404, detail="No problems available")
+        return fallback
 
     # Find weak shortcuts: ones with low mastery or never attempted
     practiced_keys = {s.shortcut_key for s in stats}
@@ -89,12 +96,12 @@ async def get_next_adaptive_problem(
     if scored:
         scored.sort(key=lambda x: -x[0])
         # Pick from the top candidates with some randomness
-        import random
         top = scored[:3]
         return random.choice(top)[1]
 
     # Fallback if nothing matched
-    import random
+    if not all_problems:
+        raise HTTPException(status_code=404, detail="No problems available")
     return random.choice(all_problems)
 
 
@@ -103,6 +110,5 @@ async def get_problem(problem_key: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Problem).where(Problem.problem_key == problem_key))
     problem = result.scalar_one_or_none()
     if not problem:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Problem not found")
     return problem

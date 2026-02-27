@@ -15,11 +15,11 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
-app.include_router(health.router)
+app.include_router(health.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(problems.router, prefix="/api")
 app.include_router(sessions.router, prefix="/api")

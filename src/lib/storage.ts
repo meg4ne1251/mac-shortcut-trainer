@@ -114,7 +114,12 @@ export function saveGameResults(results: GameResult[]): void {
     }
   }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(prev));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prev));
+  } catch {
+    // localStorage may be full or unavailable — fail gracefully
+    console.warn('Failed to save game results to localStorage');
+  }
 
   // Async sync to backend (fire and forget)
   syncResultsToBackend(results).catch(() => {});

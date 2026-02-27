@@ -10,6 +10,9 @@ export function useKeyHandler(containerRef: RefObject<HTMLElement | null>) {
       const state = useGameStore.getState();
       if (state.currentScreen !== 'game' || state.problemCompleted) return;
 
+      // Skip events during IME composition (Japanese input etc.)
+      if (e.isComposing) return;
+
       const { ctrlKey, metaKey, shiftKey, key } = e;
 
       // --- Ctrl shortcuts ---

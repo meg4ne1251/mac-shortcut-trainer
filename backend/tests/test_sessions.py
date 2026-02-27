@@ -9,7 +9,7 @@ async def _seed_problem():
     """Seed a single test problem."""
     async with TestSession() as session:
         session.add(Problem(
-            problem_key="p1", type="code", difficulty="easy",
+            problem_key="p1", type="code", difficulty="easy", category="shortcut",
             initial_content="const x = 1", goal_content="const x = 1;",
             required_keys=["ctrl_e"], locale="en",
         ))

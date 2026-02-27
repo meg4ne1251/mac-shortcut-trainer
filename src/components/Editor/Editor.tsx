@@ -74,7 +74,9 @@ function renderLineContent(
 
   // Build diff-aware character classes
   const col = isCursorRow ? (cursorCol ?? 0) : -1;
-  const chars = line.length > 0 ? line.split('') : [' '];
+  // For an empty cursor row the end-of-line cursor fallback already renders a space,
+  // so skip the placeholder char to avoid rendering two spaces side-by-side.
+  const chars = line.length > 0 ? line.split('') : (isCursorRow ? [] : [' ']);
   const isEmptyLine = line.length === 0;
 
   return (

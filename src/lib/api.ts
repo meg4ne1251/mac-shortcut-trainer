@@ -1,14 +1,23 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const REQUEST_TIMEOUT_MS = 10_000;
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options,
-  });
-  if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${await res.text()}`);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      signal: controller.signal,
+      ...options,
+    });
+    if (!res.ok) {
+      throw new Error(`API error ${res.status}: ${await res.text()}`);
+    }
+    return res.json();
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return res.json();
 }
 
 // --- User ---
@@ -92,6 +101,7 @@ export interface ApiProblem {
   problem_key: string;
   type: string;
   difficulty: string;
+  category: string;
   initial_content: string;
   goal_content: string;
   required_keys: string[];

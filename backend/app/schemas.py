@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 from pydantic import BaseModel, Field
 
 
 # --- User ---
 
 class UserCreate(BaseModel):
-    nickname: str | None = None
-    locale: str = "en"
+    nickname: str | None = Field(None, max_length=100)
+    locale: Literal["en", "ja"] = "en"
 
 
 class UserResponse(BaseModel):
@@ -49,7 +50,7 @@ class KeyLogEntry(BaseModel):
 
 class GameSessionCreate(BaseModel):
     user_id: uuid.UUID
-    problem_key: str
+    problem_key: str = Field(max_length=20)
     total_time_ms: int = Field(ge=0)
     total_misses: int = Field(ge=0, default=0)
     completed: bool = True
@@ -75,6 +76,7 @@ class ProblemResponse(BaseModel):
     problem_key: str
     type: str
     difficulty: str
+    category: str
     initial_content: str
     goal_content: str
     required_keys: list[str]
@@ -85,4 +87,4 @@ class ProblemResponse(BaseModel):
 
 class NextProblemRequest(BaseModel):
     user_id: uuid.UUID
-    type: str | None = None  # "code" | "text" | None (any)
+    type: Literal["code", "text"] | None = None

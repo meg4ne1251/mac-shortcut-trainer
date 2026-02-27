@@ -31,9 +31,9 @@ export default function StartScreen() {
   const startGame = useGameStore((s) => s.startGame);
   const setDifficulty = useGameStore((s) => s.setDifficulty);
   const setCategory = useGameStore((s) => s.setCategory);
+  const selectedDifficulty = useGameStore((s) => s.selectedDifficulty);
+  const selectedCategory = useGameStore((s) => s.selectedCategory);
   const [selectedMode, setSelectedMode] = useState<GameMode>('code');
-  const [selectedDifficulty, setSelectedDifficultyLocal] = useState<Difficulty | null>(null);
-  const [selectedCategory, setSelectedCategoryLocal] = useState<Category | null>(null);
 
   const toggleLang = () => {
     i18n.changeLanguage(i18n.language === 'ja' ? 'en' : 'ja');
@@ -45,13 +45,11 @@ export default function StartScreen() {
 
   const handleDifficultyClick = (d: Difficulty) => {
     const value = selectedDifficulty === d ? null : d;
-    setSelectedDifficultyLocal(value);
     setDifficulty(value);
   };
 
   const handleCategoryClick = (c: Category) => {
     const value = selectedCategory === c ? null : c;
-    setSelectedCategoryLocal(value);
     setCategory(value);
   };
 

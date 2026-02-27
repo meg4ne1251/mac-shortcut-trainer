@@ -50,7 +50,8 @@ class Problem(Base):
     difficulty: Mapped[str] = mapped_column(String(10))
     initial_content: Mapped[str] = mapped_column(Text)
     goal_content: Mapped[str] = mapped_column(Text)
-    required_keys: Mapped[dict] = mapped_column(JSONB, default=list)
+    required_keys: Mapped[list] = mapped_column(JSONB, default=list)
+    category: Mapped[str] = mapped_column(String(10), default="shortcut")
     locale: Mapped[str] = mapped_column(String(10), default="en")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 

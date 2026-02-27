@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/gameStore';
 import Editor from '../Editor/Editor';
 import AdPlaceholder from '../ui/AdPlaceholder';
 import { useTimer, formatTime } from '../../hooks/useTimer';
+import type { Difficulty, Category, Language } from '../../types';
 
 const SHORTCUT_HINTS = [
   { keys: '⌃F', desc: '→' },
@@ -44,18 +45,18 @@ export default function GameScreen() {
   const totalProblems = gameMode === 'adaptive' ? 5 : activeProblems.length;
   const currentNum = gameMode === 'adaptive' ? problemResults.length + 1 : currentProblemIndex + 1;
 
-  const difficultyColors: Record<string, string> = {
+  const difficultyColors: Record<Difficulty, string> = {
     easy: 'text-green-400 bg-green-400/10 border-green-400/30',
     medium: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/30',
     hard: 'text-red-400 bg-red-400/10 border-red-400/30',
   };
 
-  const categoryIcons: Record<string, string> = {
+  const categoryIcons: Record<Category, string> = {
     typing: '⌨️',
     shortcut: '⚡',
   };
 
-  const languageBadges: Record<string, string> = {
+  const languageBadges: Record<Language, string> = {
     en: 'EN',
     ja: 'JA',
     mixed: 'MIX',
